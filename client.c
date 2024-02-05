@@ -7,7 +7,7 @@
  *  3) Dr. Sat Garcia (sat@sandiego.edu)
  *
  * 	USD COMP 375: Computer Networks
- * 	Lab 02
+ * 	Mini Project #1
  *
  * This is the client that will talk to the chat server.
  *
@@ -67,7 +67,7 @@ int main() {
 
 	// TODO: send the message in buff using send() function (Beej's Guide,
 	// Section 5.7 talks about send()).
-	// TODO: error check send result
+	// TODO (later): error check send result
 
 	memset(buff, 0, BUFF_SIZE);
 
@@ -75,8 +75,9 @@ int main() {
 	// Use recv() to store the message in buff (again, see Beej's Guide,
 	// Section 5.7).
 
-	// TODO: error check recv() result
-	// Use the strstr function to see if response starts with "BAD"
+	// TODO (later): error check recv() result
+
+	// TODO: Use the strstr function to see if response starts with "BAD"
 	
 	memset(buff, 0, BUFF_SIZE);
 
@@ -108,15 +109,16 @@ int main() {
 				// TODO: use fgets to read user input into name_buff
 				
 				// TODO: use strcat to append name_buff to buff
+
 				// TODO: use strcat to append " : " to buff
 
-				// TODO: prompt user for message
+				// prompt user for message
 				char msg_buff[BUFF_SIZE];
 				memset(msg_buff, 0, BUFF_SIZE);
 
 				printf("Enter the message to send: ");
 
-				// TODO: use fgets to read input into msg_buff
+				// use fgets to read input into msg_buff
 				fgets(msg_buff, BUFF_SIZE, stdin);
 
 				// TODO: use strcat to append msg_buff to buff
@@ -151,7 +153,8 @@ int main() {
 				// Exit the program gracefully.
 				printf("Thanks for using AwesomeChat!\n");
 
-				// TODO: close the connectoin
+				// TODO: close the connection using the close function
+
 				exit(0);
 				break;
 
@@ -162,6 +165,7 @@ int main() {
 	}
 
 	// Should never get to this point so return 1 for "error"
+
 	// TODO: close the connection
 	return 1;
 }
@@ -206,8 +210,7 @@ long prompt() {
  * @return File descriptor of new socket to use.
  */
 int connect_to_host(char *hostname, char *port) {
-	// Step 1: fill in the address info in preparation for setting up the
-	// socket
+	// Step 1: fill in the address info in preparation for setting up the socket.
 	int status;
 	struct addrinfo hints;
 	struct addrinfo *servinfo;  // will point to the results
@@ -222,11 +225,15 @@ int connect_to_host(char *hostname, char *port) {
 	status = getaddrinfo(/*FIXME*/);
 
 	// Step 2: Make a call to socket() to create a socket.
+
 	// TODO: call socket (again, see Beej's guide for help, this time Section
 	// 5.2)
 	int fd = socket(/*FIXME*/);
 
 	// TODO: make a call to connect (Beej's guide, section 5.4)
+
+	// free memory that was allocated by getaddrinfo
+	freeaddrinfo(servinfo);
 
 	// TODO: Replace -1 with the value returned by socket so that we return
 	// the file descriptor for the socket
