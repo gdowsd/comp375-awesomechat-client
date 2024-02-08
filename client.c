@@ -141,11 +141,13 @@ int main() {
 				// TODO: send a GET request
 
 				// TODO: handle server response
-				// In response to a GET, the server will send one message at a
-				// time.
-				// We'll keep receiving messages until we get the "DONE\n"
-				// message, which indicates we don't have any more messages.
-				// You can use the strcmp function to compare two strings.
+				// In response to a GET, the server will send each message on
+				// its own line. Often this will require only a single recv,
+				// but be safe, you should continually call recv until you
+				// get "DONE\n" as part of the message.
+				// You can use the strstr function to check whether one string
+				// (e.g. "DONE\n") is contained within another one (i.e. the
+				// full buffer).
 				
 				break;
 
