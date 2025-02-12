@@ -35,8 +35,18 @@
 
 #define BUFF_SIZE 1024
 
-long prompt();
+typedef enum UserAction {
+	LIST = 1,
+	SEND = 2,
+	PRINT = 3,
+	QUIT = 4,
+	INVALID
+} UserAction;
+
+UserAction get_user_selection();
 int connect_to_host(char *hostname, char* port);
+
+
 
 int main() {
 	// TODO: connect to hopper.sandiego.edu on port 7099 by calling the
@@ -59,7 +69,7 @@ int main() {
 	memset(name_buff, 0, 100);
 
 	// TODO: use fgets() to store user entered name in name_buff. Check the
-	// use of fgets in the prompt function later in this file and/or review
+	// use of fgets in the get_user_selection function later in this file and/or review
 	// the fgets manual (i.e. "man fgets") to find the number and type of
 	// parameters needed when calling this function.
 
@@ -83,10 +93,10 @@ int main() {
 
 	// Connect to server until ctl-c and return sensor reading or error message
 	while (true) {
-		long selection = prompt();
+		UserAction selection = get_user_selection();
 
 		switch (selection) {
-			case 1:
+			case LIST:
 				// Send request to server for a list of users
 				// TODO: send LIST request
 
@@ -96,7 +106,7 @@ int main() {
 
 				break;
 
-			case 2:
+			case SEND:
 				// Send a message to another user
 				// prompt user for username
 				printf("Enter username of recipient: ");
@@ -136,7 +146,7 @@ int main() {
 
 				break;
 
-			case 3:
+			case PRINT:
 				// Print the messages we haven't received yet
 				// TODO: send a GET request
 
@@ -151,7 +161,7 @@ int main() {
 				
 				break;
 
-			case 4:
+			case QUIT:
 				// Exit the program gracefully.
 				printf("Thanks for using AwesomeChat!\n");
 
@@ -175,9 +185,9 @@ int main() {
 /* 
  * Print command prompt to user and obtain user input.
  *
- * @return The user's desired selection, or -1 if invalid selection.
+ * @return The user's desired selection.
  */
-long prompt() {
+UserAction get_user_selection() {
 	printf("What would you like to do?\n\n");
 	printf("\t(1) Print list of users that are currently online.\n");
 	printf("\t(2) Send a message to another user.\n");
@@ -198,10 +208,15 @@ long prompt() {
 	long sensor = strtol(input, &end, 10);
 
 	if (end == input || *end != '\0') {
-		sensor = -1;
+		return INVALID;
 	}
 
-	return sensor;
+	if (sensor < 0 || sensor > 4) {
+		return INVALID;
+	}
+	else {
+		return sensor;
+	}
 }
 
 /*
