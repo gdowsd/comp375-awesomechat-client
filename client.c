@@ -47,6 +47,9 @@ typedef enum UserAction {
 	INVALID
 } UserAction;
 
+// C's a bit weird: we need to declare (or define) functions before we use
+// them, unlike modern languages (e.g. Python) where it doesn't matter what
+// order you define your functions/classes.
 UserAction get_user_selection();
 int connect_to_host(char *hostname, char* port);
 void get_user_list(int socket_fd);
