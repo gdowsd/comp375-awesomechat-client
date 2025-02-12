@@ -35,6 +35,10 @@
 
 #define BUFF_SIZE 1024
 
+/**
+ * Type that represents the possible actions that a user could select while running
+ * the program.
+ */
 typedef enum UserAction {
 	LIST = 1,
 	SEND = 2,
@@ -45,16 +49,58 @@ typedef enum UserAction {
 
 UserAction get_user_selection();
 int connect_to_host(char *hostname, char* port);
-
+void get_user_list(int socket_fd);
+void send_message(int socket_fd);
+void print_messages(int socket_fd);
+void set_username(int socket_fd);
 
 
 int main() {
+	printf("Welcome to the AwesomeChat: The COMP375 chat server.\n\n\n");
+
 	// TODO: connect to hopper.sandiego.edu on port 7099 by calling the
 	// connect_to_host function. Note that the second parameter should be a
 	// string (e.g. "7099", not an integer (i.e. 7099).
+	int server_socket = 0; // replace 0 with a call to connect_to_host
 
-	printf("Welcome to the AwesomeChat: The COMP375 chat server.\n\n\n");
+	// Connect to server until ctl-c and return sensor reading or error message
+	while (true) {
+		UserAction selection = get_user_selection();
 
+		switch (selection) {
+			case LIST:
+				get_user_list(server_socket);
+				break;
+
+			case SEND:
+				send_message(server_socket);
+				break;
+
+			case PRINT:
+				print_messages(server_socket);
+				break;
+
+			case QUIT:
+				printf("Thanks for using AwesomeChat!\n");
+
+				// TODO: close the connection using the close function
+
+				exit(0);
+				break;
+
+			default:
+				printf("\n*** Invalid selection.\n\n");
+				break;
+		}
+	}
+
+	// Should never get to this point so return 1 for "error"
+
+	// TODO: close the connection
+	return 1;
+}
+
+void set_username(int socket_fd) {
 	printf("Please enter a username: ");
 
 	// buff will be the array we use to send and receive data to/from the
@@ -88,98 +134,85 @@ int main() {
 	// TODO (later): error check recv() result
 
 	// TODO: Use the strstr function to see if response starts with "BAD"
-	
+}
+
+/**
+ * Uses the LIST command to get and print the list of users that are currently online.
+ * 
+ * @param socket_fd The socket used to communicate with the chat server.
+ */
+void get_user_list(int socket_fd) {
+	// Send request to server for a list of users
+	// TODO: send LIST request
+
+	// TODO: receive and handle server response to LIST
+}
+
+/**
+ * Uses the SENDTO command to send a message to another user.
+ * 
+ * @param socket_fd The socket used to communicate with the chat server.
+ */
+void send_message(int socket_fd) {
+	printf("Enter username of recipient: ");
+
+	char buff[BUFF_SIZE];
 	memset(buff, 0, BUFF_SIZE);
 
-	// Connect to server until ctl-c and return sensor reading or error message
-	while (true) {
-		UserAction selection = get_user_selection();
+	char name_buff[100];
+	memset(name_buff, 0, 100);
 
-		switch (selection) {
-			case LIST:
-				// Send request to server for a list of users
-				// TODO: send LIST request
+	strcpy(buff, "SENDTO ");
 
-				// TODO: receive and handle server response to LIST
-				
-				memset(buff, 0, BUFF_SIZE);
+	// TODO: use fgets to read user input into name_buff
 
-				break;
+	// TODO: use strcat to append name_buff to buff
 
-			case SEND:
-				// Send a message to another user
-				// prompt user for username
-				printf("Enter username of recipient: ");
+	// TODO: use strcat to append " : " to buff
 
-				memset(buff, 0, BUFF_SIZE);
-				memset(name_buff, 0, 100);
+	// prompt user for message
+	char msg_buff[BUFF_SIZE];
+	memset(msg_buff, 0, BUFF_SIZE);
 
-				strcpy(buff, "SENDTO ");
+	printf("Enter the message to send: ");
 
-				// TODO: use fgets to read user input into name_buff
-				
-				// TODO: use strcat to append name_buff to buff
+	// use fgets to read input into msg_buff
+	fgets(msg_buff, BUFF_SIZE, stdin);
 
-				// TODO: use strcat to append " : " to buff
+	// TODO: use strcat to append msg_buff to buff
 
-				// prompt user for message
-				char msg_buff[BUFF_SIZE];
-				memset(msg_buff, 0, BUFF_SIZE);
+	// TODO: send the completed SENDTO request (stored in buff)
 
-				printf("Enter the message to send: ");
+	memset(buff, 0, BUFF_SIZE);
 
-				// use fgets to read input into msg_buff
-				fgets(msg_buff, BUFF_SIZE, stdin);
+	// TODO: receive and handle server response
+	// Make sure it doesn't start with "BAD"
 
-				// TODO: use strcat to append msg_buff to buff
+	printf("Message sent\n");
+}
 
-				// TODO: send the completed SENDTO request (stored in buff)
+/**
+ * Uses the GET command to get and print our messages.
+ * 
+ * @note This is a destructive action, meaning that it not only gets the messages from the server
+ * but also deletes them so future requests for messages don't return the same messages.
+ * 
+ * @param socket_fd The socket used to communicate with the chat server.
+ */
+void print_messages(int socket_fd) {
+	char buff[BUFF_SIZE];
+	memset(buff, 0, BUFF_SIZE);
 
-				memset(buff, 0, BUFF_SIZE);
+	// TODO: send a GET request
 
-				// TODO: receive and handle server response
-				// Make sure it doesn't start with "BAD"
-
-				printf("Message sent\n");
-
-				memset(buff, 0, BUFF_SIZE);
-
-				break;
-
-			case PRINT:
-				// Print the messages we haven't received yet
-				// TODO: send a GET request
-
-				// TODO: handle server response
-				// In response to a GET, the server will send each message on
-				// its own line. Often this will require only a single recv,
-				// but be safe, you should continually call recv until you
-				// get "DONE\n" as part of the message.
-				// You can use the strstr function to check whether one string
-				// (e.g. "DONE\n") is contained within another one (i.e. the
-				// full buffer).
-				
-				break;
-
-			case QUIT:
-				// Exit the program gracefully.
-				printf("Thanks for using AwesomeChat!\n");
-
-				// TODO: close the connection using the close function
-
-				exit(0);
-				break;
-
-			default:
-				printf("\n*** Invalid selection.\n\n");
-				break;
-		}
-	}
-
-	// Should never get to this point so return 1 for "error"
-
-	// TODO: close the connection
-	return 1;
+	// TODO: handle server response
+	// In response to a GET, the server will send each message on
+	// its own line. Often this will require only a single recv,
+	// but be safe, you should continually call recv until you
+	// get "DONE\n" as part of the message.
+	// You can use the strstr function to check whether one string
+	// (e.g. "DONE\n") is contained within another one (i.e. the
+	// full buffer).
 }
 
 /* 
@@ -208,6 +241,7 @@ UserAction get_user_selection() {
 	long sensor = strtol(input, &end, 10);
 
 	if (end == input || *end != '\0') {
+		// the user entered something other than an integer
 		return INVALID;
 	}
 
