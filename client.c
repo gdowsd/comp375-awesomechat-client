@@ -162,7 +162,7 @@ void get_user_list(int socket_fd) {
  * @param socket_fd The socket used to communicate with the chat server.
  */
 void send_message(int socket_fd) {
-	printf("Enter username of recipient: ");
+	
 
 	char sendto_message[BUFF_SIZE];
 	memset(sendto_message, 0, BUFF_SIZE);
@@ -172,6 +172,7 @@ void send_message(int socket_fd) {
 
 	strcpy(sendto_message, "SENDTO ");
 
+	printf("Enter username of recipient: ");
 	// TODO: use fgets to read user input into receipient_name
 
 	// TODO: use strcat to append receipient_name to sendto_message
