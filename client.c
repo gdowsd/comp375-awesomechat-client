@@ -63,6 +63,8 @@ int main() {
 	// string (e.g. "7099", not an integer (i.e. 7099).
 	int server_socket = 0; // replace 0 with a call to connect_to_host
 
+	set_username(server_socket);
+
 	// Connect to server until ctl-c and return sensor reading or error message
 	while (true) {
 		UserAction selection = get_user_selection();
@@ -100,35 +102,41 @@ int main() {
 	return 1;
 }
 
+/**
+ * Uses the MYNAME command to set the username.
+ * 
+ * @param socket_fd The socket used to communicate with the chat server.
+ */
 void set_username(int socket_fd) {
 	printf("Please enter a username: ");
 
-	// buff will be the array we use to send and receive data to/from the
+	// mynameis_message will be the array we use to send and receive data to/from the
 	// server
-	char buff[BUFF_SIZE];
-	memset(buff, 0, BUFF_SIZE); // this makes every character '\0', i.e. NUL
+	char mynameis_message[BUFF_SIZE];
+	memset(mynameis_message, 0, BUFF_SIZE); // this makes every character '\0', i.e. NUL
 
 	// Start by sending username request to server
-	strcpy(buff, "MYNAMEIS ");
+	strcpy(mynameis_message, "MYNAMEIS ");
 
-	char name_buff[100];
-	memset(name_buff, 0, 100);
+	char username[100];
+	memset(username, 0, 100);
 
-	// TODO: use fgets() to store user entered name in name_buff. Check the
+	// TODO: use fgets() to store user entered name in username. Check the
 	// use of fgets in the get_user_selection function later in this file and/or review
 	// the fgets manual (i.e. "man fgets") to find the number and type of
 	// parameters needed when calling this function.
 
-	strcat(buff, name_buff); // append name to end of buff
+	strcat(mynameis_message, username); // append username to end of mynameis_message
 
-	// TODO: send the message in buff using send() function (Beej's Guide,
+	// TODO: send the message in mynameis_message using send() function (Beej's Guide,
 	// Section 5.7 talks about send()).
 	// TODO (later): error check send result
 
-	memset(buff, 0, BUFF_SIZE);
+	char response[BUFF_SIZE];
+	memset(response, 0, BUFF_SIZE); // this makes every character '\0', i.e. NUL
 
 	// TODO: receive response from server for MYNAMEIS command
-	// Use recv() to store the message in buff (again, see Beej's Guide,
+	// Use recv() to store the message in the response array (again, see Beej's Guide,
 	// Section 5.7).
 
 	// TODO (later): error check recv() result
@@ -156,34 +164,34 @@ void get_user_list(int socket_fd) {
 void send_message(int socket_fd) {
 	printf("Enter username of recipient: ");
 
-	char buff[BUFF_SIZE];
-	memset(buff, 0, BUFF_SIZE);
+	char sendto_message[BUFF_SIZE];
+	memset(sendto_message, 0, BUFF_SIZE);
 
-	char name_buff[100];
-	memset(name_buff, 0, 100);
+	char receipient_name[100];
+	memset(receipient_name, 0, 100);
 
-	strcpy(buff, "SENDTO ");
+	strcpy(sendto_message, "SENDTO ");
 
-	// TODO: use fgets to read user input into name_buff
+	// TODO: use fgets to read user input into receipient_name
 
-	// TODO: use strcat to append name_buff to buff
+	// TODO: use strcat to append receipient_name to sendto_message
 
-	// TODO: use strcat to append " : " to buff
+	// TODO: use strcat to append " : " to sendto_message
 
 	// prompt user for message
-	char msg_buff[BUFF_SIZE];
-	memset(msg_buff, 0, BUFF_SIZE);
+	char message_body[BUFF_SIZE];
+	memset(message_body, 0, BUFF_SIZE);
 
 	printf("Enter the message to send: ");
 
-	// use fgets to read input into msg_buff
-	fgets(msg_buff, BUFF_SIZE, stdin);
+	// use fgets to read input into message_body
+	fgets(message_body, BUFF_SIZE, stdin);
 
-	// TODO: use strcat to append msg_buff to buff
+	// TODO: use strcat to append message_body to sendto_message
 
-	// TODO: send the completed SENDTO request (stored in buff)
+	// TODO: send the completed SENDTO request (stored in sendto_message)
 
-	memset(buff, 0, BUFF_SIZE);
+	memset(sendto_message, 0, BUFF_SIZE);
 
 	// TODO: receive and handle server response
 	// Make sure it doesn't start with "BAD"
@@ -200,16 +208,22 @@ void send_message(int socket_fd) {
  * @param socket_fd The socket used to communicate with the chat server.
  */
 void print_messages(int socket_fd) {
-	char buff[BUFF_SIZE];
-	memset(buff, 0, BUFF_SIZE);
+	char get_message[BUFF_SIZE];
+	memset(get_message, 0, BUFF_SIZE);
 
-	// TODO: send a GET request
+	// TODO: send the GET message
 
-	// TODO: handle server response
+	
+	char response[BUFF_SIZE];
+	memset(response, 0, BUFF_SIZE);
+
+	// TODO: receive and process server response
+
 	// In response to a GET, the server will send each message on
 	// its own line. Often this will require only a single recv,
 	// but be safe, you should continually call recv until you
 	// get "DONE\n" as part of the message.
+
 	// You can use the strstr function to check whether one string
 	// (e.g. "DONE\n") is contained within another one (i.e. the
 	// full buffer).
