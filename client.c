@@ -2,8 +2,8 @@
  * client.c
  *
  * Authors:
- *  1) Partner A's name (and email)
- *  2) Partner B's name (and email)
+ *  1) Gabby Dow (gdow@sandiego.edu)
+ *  2) Natalia Orlof-Carson (norlofcarson@sandiego.edu)
  *  3) Dr. Sat Garcia (sat@sandiego.edu)
  *
  * 	USD COMP 375: Computer Networks
@@ -290,21 +290,17 @@ int connect_to_host(char *hostname, char *port) {
 
 	// Get ready to connect to the hostname and port given as parameters to
 	// this (i.e. connect_to_host) function.
-	// TODO: make a call to getaddrinfo (see Beej's guide Section 5.1).
-	status = getaddrinfo(/*FIXME*/);
+	status = getaddrinfo(hostname, port, &hints, &servinfo);
 
 	// Step 2: Make a call to socket() to create a socket.
 
-	// TODO: call socket (again, see Beej's guide for help, this time Section
-	// 5.2)
-	int fd = socket(/*FIXME*/);
+	int fd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
 
-	// TODO: make a call to connect (Beej's guide, section 5.4)
-
+	// make a call to connect
+	connect(fd, servinfo->ai_addr, servinfo->ai_addrlen);
 	// free memory that was allocated by getaddrinfo
 	freeaddrinfo(servinfo);
 
-	// TODO: Replace -1 with the value returned by socket so that we return
-	// the file descriptor for the socket
-	return -1;
+	// return the file descriptor for the socket
+	return fd;
 }
