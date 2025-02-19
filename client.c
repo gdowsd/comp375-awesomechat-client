@@ -61,10 +61,10 @@ void set_username(int socket_fd);
 int main() {
 	printf("Welcome to the AwesomeChat: The COMP375 chat server.\n\n\n");
 
-	// TODO: connect to hopper.sandiego.edu on port 7099 by calling the
+	// connect to hopper.sandiego.edu on port 7099 by calling the
 	// connect_to_host function. Note that the second parameter should be a
 	// string (e.g. "7099", not an integer (i.e. 7099).
-	int server_socket = 0; // replace 0 with a call to connect_to_host
+	int server_socket = connect_to_host("hopper.sandiego.edu", "7099");; // replace 0 with a call to connect_to_host
 
 	set_username(server_socket);
 
@@ -88,8 +88,8 @@ int main() {
 			case QUIT:
 				printf("Thanks for using AwesomeChat!\n");
 
-				// TODO: close the connection using the close function
-
+				// close the connection
+				close(server_socket);
 				exit(0);
 				break;
 
@@ -101,7 +101,8 @@ int main() {
 
 	// Should never get to this point so return 1 for "error"
 
-	// TODO: close the connection
+	// close the connection
+	close(server_socket);
 	return 1;
 }
 
@@ -124,27 +125,34 @@ void set_username(int socket_fd) {
 	char username[100];
 	memset(username, 0, 100);
 
-	// TODO: use fgets() to store user entered name in username. Check the
+	// use fgets() to store user entered name in username. Check the
 	// use of fgets in the get_user_selection function later in this file and/or review
 	// the fgets manual (i.e. "man fgets") to find the number and type of
 	// parameters needed when calling this function.
+	fgets(username, 100, stdin);
 
 	strcat(mynameis_message, username); // append username to end of mynameis_message
 
-	// TODO: send the message in mynameis_message using send() function (Beej's Guide,
-	// Section 5.7 talks about send()).
-	// TODO (later): error check send result
+	// send the message in mynameis_message using send() function (Beej's Guide,
+	// Section 5.7 talks about send()) & check for send errors
+	if (send(socket_fd, mynameis_message, BUFF_SIZE, 0) == -1){
+		perror("Failed to send request");
+		return;
+	}
 
 	char response[BUFF_SIZE];
 	memset(response, 0, BUFF_SIZE); // this makes every character '\0', i.e. NUL
 
-	// TODO: receive response from server for MYNAMEIS command
+	// receive response from server for MYNAMEIS command
 	// Use recv() to store the message in the response array (again, see Beej's Guide,
-	// Section 5.7).
+	// Section 5.7) & check for errors receiving
+	if (recv(socket_fd, response, BUFF_SIZE, 0) < 0){
+		perror("Failed to receive message");
+		return;
+	}
 
-	// TODO (later): error check recv() result
-
-	// TODO: Use the strstr function to see if response starts with "BAD"
+	// Use the strstr function to see if response starts with "BAD"
+	strstr(response, "BAD");
 }
 
 /**
@@ -154,9 +162,19 @@ void set_username(int socket_fd) {
  */
 void get_user_list(int socket_fd) {
 	// Send request to server for a list of users
-	// TODO: send LIST request
+	// send LIST request
+	char list_command[BUFF_SIZE];
+	memset(list_command, 0, BUFF_SIZE);
+	strcpy(list_command, "LIST ");
 
-	// TODO: receive and handle server response to LIST
+	send(socket_fd, list_command, BUFF_SIZE, 0);
+	
+
+	//receive and handle server response to LIST
+	char response[BUFF_SIZE];
+	memset(response, 0, BUFF_SIZE);
+	recv(socket_fd, response, BUFF_SIZE, 0);
+
 }
 
 /**
@@ -176,11 +194,14 @@ void send_message(int socket_fd) {
 	strcpy(sendto_message, "SENDTO ");
 
 	printf("Enter username of recipient: ");
-	// TODO: use fgets to read user input into receipient_name
+	// Use fgets to read user input into receipient_name
+	fgets(receipient_name, 100, stdin);
 
-	// TODO: use strcat to append receipient_name to sendto_message
+	// use strcat to append receipient_name to sendto_message
+	strcat(sendto_message, receipient_name);
 
-	// TODO: use strcat to append " : " to sendto_message
+	// use strcat to append " : " to sendto_message
+	strcat(sendto_message, " : ");
 
 	// prompt user for message
 	char message_body[BUFF_SIZE];
@@ -191,14 +212,18 @@ void send_message(int socket_fd) {
 	// use fgets to read input into message_body
 	fgets(message_body, BUFF_SIZE, stdin);
 
-	// TODO: use strcat to append message_body to sendto_message
+	// use strcat to append message_body to sendto_message
+	strcat(sendto_message, message_body);
 
-	// TODO: send the completed SENDTO request (stored in sendto_message)
+	// send the completed SENDTO request (stored in sendto_message)
+	send(socket_fd, sendto_message, BUFF_SIZE, 0);
 
 	memset(sendto_message, 0, BUFF_SIZE);
 
-	// TODO: receive and handle server response
+	// receive and handle server response
 	// Make sure it doesn't start with "BAD"
+	recv(socket_fd, sendto_message, BUFF_SIZE, 0);
+	strstr(sendto_message, "BAD");
 
 	printf("Message sent\n");
 }
@@ -215,13 +240,16 @@ void print_messages(int socket_fd) {
 	char get_message[BUFF_SIZE];
 	memset(get_message, 0, BUFF_SIZE);
 
-	// TODO: send the GET message
+	// send the GET message
+	send(socket_fd, get_message, BUFF_SIZE, 0);
 
-	
 	char response[BUFF_SIZE];
 	memset(response, 0, BUFF_SIZE);
 
-	// TODO: receive and process server response
+	// receive and process server response
+	do {
+		recv(socket_fd, response, BUFF_SIZE, 0);
+	} while (strstr(response, "DONE\n") == NULL);
 
 	// In response to a GET, the server will send each message on
 	// its own line. Often this will require only a single recv,
