@@ -64,7 +64,7 @@ int main() {
 	// connect to hopper.sandiego.edu on port 7099 by calling the
 	// connect_to_host function. Note that the second parameter should be a
 	// string (e.g. "7099", not an integer (i.e. 7099).
-	int server_socket = connect_to_host("hopper.sandiego.edu", "7099");; // replace 0 with a call to connect_to_host
+	int server_socket = connect_to_host("hopper.sandiego.edu", "7099");; 
 
 	set_username(server_socket);
 
@@ -130,12 +130,13 @@ void set_username(int socket_fd) {
 	// the fgets manual (i.e. "man fgets") to find the number and type of
 	// parameters needed when calling this function.
 	fgets(username, 100, stdin);
+	username[strcspn(username, "\n")] = 0;
 
 	strcat(mynameis_message, username); // append username to end of mynameis_message
 
 	// send the message in mynameis_message using send() function (Beej's Guide,
 	// Section 5.7 talks about send()) & check for send errors
-	if (send(socket_fd, mynameis_message, BUFF_SIZE, 0) == -1){
+	if (send(socket_fd, mynameis_message, strlen(mynameis_message), 0) == -1){
 		perror("Failed to send request");
 		return;
 	}
@@ -146,13 +147,18 @@ void set_username(int socket_fd) {
 	// receive response from server for MYNAMEIS command
 	// Use recv() to store the message in the response array (again, see Beej's Guide,
 	// Section 5.7) & check for errors receiving
-	if (recv(socket_fd, response, BUFF_SIZE, 0) < 0){
+	ssize_t bytes_recv = recv(socket_fd, response, BUFF_SIZE, 0);
+	if (bytes_recv < 0) {
 		perror("Failed to receive message");
 		return;
 	}
+	response[bytes_recv] = '\0';
 
 	// Use the strstr function to see if response starts with "BAD"
-	strstr(response, "BAD");
+	if (strstr(response, "BAD") != NULL){
+		printf("Invalid username");
+		return;
+	}
 }
 
 /**
@@ -165,16 +171,23 @@ void get_user_list(int socket_fd) {
 	// send LIST request
 	char list_command[BUFF_SIZE];
 	memset(list_command, 0, BUFF_SIZE);
-	strcpy(list_command, "LIST ");
+	strcpy(list_command, "LIST");
 
-	send(socket_fd, list_command, BUFF_SIZE, 0);
+	if (send(socket_fd, list_command, BUFF_SIZE, 0) == -1){
+		perror("Failed to send request");
+		return;
+	}
 	
-
 	//receive and handle server response to LIST
 	char response[BUFF_SIZE];
 	memset(response, 0, BUFF_SIZE);
-	recv(socket_fd, response, BUFF_SIZE, 0);
-
+	ssize_t bytes_recv = recv(socket_fd, response, BUFF_SIZE, 0);
+	if (bytes_recv < 0) {
+		perror("Failed to receive message");
+		return;
+	}
+	
+	printf("%s", response);
 }
 
 /**
@@ -196,6 +209,7 @@ void send_message(int socket_fd) {
 	printf("Enter username of recipient: ");
 	// Use fgets to read user input into receipient_name
 	fgets(receipient_name, 100, stdin);
+	receipient_name[strcspn(receipient_name, "\n")] = 0;
 
 	// use strcat to append receipient_name to sendto_message
 	strcat(sendto_message, receipient_name);
@@ -211,19 +225,31 @@ void send_message(int socket_fd) {
 
 	// use fgets to read input into message_body
 	fgets(message_body, BUFF_SIZE, stdin);
+	message_body[strcspn(message_body, "\n")] = 0;
 
 	// use strcat to append message_body to sendto_message
 	strcat(sendto_message, message_body);
 
 	// send the completed SENDTO request (stored in sendto_message)
-	send(socket_fd, sendto_message, BUFF_SIZE, 0);
+	if (send(socket_fd, sendto_message, BUFF_SIZE, 0) == -1){
+		perror("Failed to send request");
+		return;
+	}
 
-	memset(sendto_message, 0, BUFF_SIZE);
+	//memset(sendto_message, 0, BUFF_SIZE);
 
 	// receive and handle server response
+	ssize_t bytes_recv = recv(socket_fd, sendto_message, BUFF_SIZE, 0);
+	if (bytes_recv < 0) {
+		perror("Failed to receive message");
+		return;
+	}
+
 	// Make sure it doesn't start with "BAD"
-	recv(socket_fd, sendto_message, BUFF_SIZE, 0);
-	strstr(sendto_message, "BAD");
+	if (strstr(sendto_message, "BAD") != NULL){
+		printf("Invalid sendto message\n");
+		return;
+	}
 
 	printf("Message sent\n");
 }
@@ -239,16 +265,26 @@ void send_message(int socket_fd) {
 void print_messages(int socket_fd) {
 	char get_message[BUFF_SIZE];
 	memset(get_message, 0, BUFF_SIZE);
+	strcpy(get_message, "GET");
 
 	// send the GET message
-	send(socket_fd, get_message, BUFF_SIZE, 0);
+	if (send(socket_fd, get_message, BUFF_SIZE, 0) == -1){
+		perror("Failed to send request");
+		return;
+	}
 
 	char response[BUFF_SIZE];
 	memset(response, 0, BUFF_SIZE);
 
 	// receive and process server response
 	do {
-		recv(socket_fd, response, BUFF_SIZE, 0);
+		ssize_t bytes_recv = recv(socket_fd, response, BUFF_SIZE, 0);
+		if (bytes_recv < 0) {
+			perror("Failed to receive message");
+			return;
+		}
+
+		printf("%s", response);
 	} while (strstr(response, "DONE\n") == NULL);
 
 	// In response to a GET, the server will send each message on
